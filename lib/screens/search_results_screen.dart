@@ -268,17 +268,30 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Mobile: 2 columns, Tablet: 3 columns, Desktop: 4 columns
-          int crossAxisCount = constraints.maxWidth > 1200
-              ? 4
-              : constraints.maxWidth > 900
-                  ? 3
-                  : constraints.maxWidth > 600
-                      ? 2
-                      : 2; // Mobile gets 2 columns
+          double screenWidth = constraints.maxWidth;
 
-          // Adjust aspect ratio for mobile
-          double aspectRatio = constraints.maxWidth < 600 ? 0.8 : 0.75;
+          int crossAxisCount;
+          double aspectRatio;
+          double spacing;
+
+          if (screenWidth > 1200) {
+            crossAxisCount = 4;
+            aspectRatio = 0.75;
+            spacing = 16;
+          } else if (screenWidth > 900) {
+            crossAxisCount = 3;
+            aspectRatio = 0.8;
+            spacing = 16;
+          } else if (screenWidth > 600) {
+            crossAxisCount = 2;
+            aspectRatio = 0.9;
+            spacing = 16;
+          } else {
+            // Mobile: 2 columns - TALLER cards
+            crossAxisCount = 2;
+            aspectRatio = 0.95; // Increased from 0.8 to 0.95
+            spacing = 12;
+          }
 
           return GridView.builder(
             shrinkWrap: true,
@@ -286,8 +299,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               childAspectRatio: aspectRatio,
-              crossAxisSpacing: constraints.maxWidth < 600 ? 12 : 16,
-              mainAxisSpacing: constraints.maxWidth < 600 ? 12 : 16,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
             ),
             itemCount: _searchResults.length,
             itemBuilder: (context, index) {

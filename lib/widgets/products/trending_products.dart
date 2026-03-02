@@ -213,26 +213,48 @@ class _TrendingProductsState extends State<TrendingProducts> {
           // Grid skeleton
           LayoutBuilder(
             builder: (context, constraints) {
-              int crossAxisCount = constraints.maxWidth > 1200
-                  ? 4
-                  : constraints.maxWidth > 900
-                      ? 3
-                      : constraints.maxWidth > 600
-                          ? 2
-                          : 1;
+              // Get screen width
+              double screenWidth = constraints.maxWidth;
+
+              // Determine number of columns based on screen size
+              int crossAxisCount;
+              double aspectRatio;
+              double spacing;
+
+              if (screenWidth > 1200) {
+                // Desktop: 4 columns
+                crossAxisCount = 4;
+                aspectRatio = 0.75;
+                spacing = 16;
+              } else if (screenWidth > 900) {
+                // Small desktop/tablet: 3 columns
+                crossAxisCount = 3;
+                aspectRatio = 0.8;
+                spacing = 16;
+              } else if (screenWidth > 600) {
+                // Tablet: 2 columns
+                crossAxisCount = 2;
+                aspectRatio = 0.9;
+                spacing = 16;
+              } else {
+                // Mobile: 2 columns - make cards TALLER
+                crossAxisCount = 2;
+                aspectRatio = 0.95; // Increased from 0.8 to 0.95 (taller)
+                spacing = 12;
+              }
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  childAspectRatio: aspectRatio,
+                  crossAxisSpacing: spacing,
+                  mainAxisSpacing: spacing,
                 ),
-                itemCount: crossAxisCount * 2, // Show 2 rows of skeletons
+                itemCount: _trendingProducts.length,
                 itemBuilder: (context, index) {
-                  return const ProductCardSkeleton();
+                  return ProductCard(product: _trendingProducts[index]);
                 },
               );
             },

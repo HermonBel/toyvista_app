@@ -213,10 +213,8 @@ class _BlogsScreenState extends State<BlogsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Get screen width
           double screenWidth = constraints.maxWidth;
 
-          // Determine number of columns based on screen size
           int crossAxisCount;
           double aspectRatio;
           double spacing;
@@ -229,12 +227,12 @@ class _BlogsScreenState extends State<BlogsScreen> {
           } else if (screenWidth > 800) {
             // Tablet: 2 columns
             crossAxisCount = 2;
-            aspectRatio = 0.8;
+            aspectRatio = 0.85;
             spacing = 20;
           } else {
-            // Mobile: 2 columns (changed from 1 to 2)
+            // Mobile: 2 columns - TALLER cards
             crossAxisCount = 2;
-            aspectRatio = 0.9; // Slightly taller for mobile to fit content
+            aspectRatio = 0.9; // Increased from 0.85 to 0.9
             spacing = 12;
           }
 

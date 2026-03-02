@@ -105,16 +105,19 @@ class _LatestBlogsState extends State<LatestBlogs> {
           const SizedBox(height: 32),
           LayoutBuilder(
             builder: (context, constraints) {
-              // MOBILE: Use GridView with 2 columns (no more cutting off)
-              if (constraints.maxWidth < 600) {
+              double screenWidth = constraints.maxWidth;
+
+              // MOBILE: Use GridView with taller cards
+              if (screenWidth < 600) {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // 2 columns on mobile
-                    childAspectRatio: 0.9, // Adjusted for mobile
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    crossAxisCount: 2,
+                    childAspectRatio:
+                        0.85, // Increased from 0.9 to 0.85 (taller)
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
                   itemCount: _latestBlogs.length,
                   itemBuilder: (context, index) {
@@ -122,14 +125,30 @@ class _LatestBlogsState extends State<LatestBlogs> {
                   },
                 );
               }
-              // TABLET/DESKTOP: Use GridView with more columns
-              else {
-                int crossAxisCount = constraints.maxWidth > 1200 ? 3 : 2;
+              // TABLET
+              else if (screenWidth < 900) {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.9,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _latestBlogs.length,
+                  itemBuilder: (context, index) {
+                    return BlogCard(blog: _latestBlogs[index]);
+                  },
+                );
+              }
+              // DESKTOP
+              else {
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
                     childAspectRatio: 0.9,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
