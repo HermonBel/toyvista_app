@@ -40,7 +40,7 @@ class _TrendingProductsState extends State<TrendingProducts> {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 100));
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = json.decode(response.body);

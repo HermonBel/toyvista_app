@@ -39,7 +39,7 @@ class _LatestBlogsState extends State<LatestBlogs> {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 100));
 
       if (response.statusCode == 200) {
         final List<dynamic> blogsJson = json.decode(response.body);
