@@ -1,6 +1,5 @@
 // lib/widgets/categories/category_pill.dart
 import 'package:flutter/material.dart';
-import 'popular_badge.dart';
 import '../../utils/constants.dart';
 
 class CategoryPill extends StatefulWidget {
@@ -37,16 +36,53 @@ class _CategoryPillState extends State<CategoryPill> {
                 transform: _isHovered
                     ? (Matrix4.identity()..scale(1.1))
                     : Matrix4.identity(),
-                child: const PopularBadge(),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [toyBlue, Color(0xFF2563EB)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: toyBlue.withOpacity(0.4),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.star,
+                        color: Colors.yellow,
+                        size: 12,
+                      ),
+                      SizedBox(width: 2),
+                      Text(
+                        'POPULAR',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           Container(
-            width: double.infinity,
-            height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               gradient: _isHovered
                   ? const LinearGradient(
-                      colors: [toyBlue, Color(0xFF3B82F6)],
+                      colors: [toyBlue, Color(0xFF2563EB)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
@@ -57,40 +93,25 @@ class _CategoryPillState extends State<CategoryPill> {
                 BoxShadow(
                   color: _isHovered
                       ? toyBlue.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.1),
+                      : Colors.grey.withOpacity(0.2),
                   spreadRadius: _isHovered ? 2 : 1,
                   blurRadius: _isHovered ? 8 : 4,
                   offset: Offset(0, _isHovered ? 4 : 2),
                 ),
               ],
+              border: Border.all(
+                color: _isHovered
+                    ? Colors.transparent
+                    : Colors.grey.withOpacity(0.2),
+              ),
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  // Handle category tap
-                  print('Selected: ${widget.name}');
-                },
-                borderRadius: BorderRadius.circular(25),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  child: Center(
-                    child: Text(
-                      widget.name,
-                      style: TextStyle(
-                        color: _isHovered ? Colors.white : toySlate,
-                        fontSize: 13,
-                        fontWeight: widget.isPopular
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
+            child: Text(
+              widget.name,
+              style: TextStyle(
+                color: _isHovered ? Colors.white : const Color(0xFF334155),
+                fontSize: 14,
+                fontWeight:
+                    widget.isPopular ? FontWeight.bold : FontWeight.w500,
               ),
             ),
           ),
