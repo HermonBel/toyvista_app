@@ -2,100 +2,56 @@
 import 'package:flutter/material.dart';
 import '../../utils/constants.dart';
 
-class FooterBrand extends StatefulWidget {
+class FooterBrand extends StatelessWidget {
   const FooterBrand({super.key});
 
   @override
-  State<FooterBrand> createState() => _FooterBrandState();
-}
-
-class _FooterBrandState extends State<FooterBrand>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _rotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 4),
-      vsync: this,
-    )..repeat(); // Repeats forever
-
-    _rotationAnimation = Tween<double>(begin: -0.1, end: 0.3).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _rotationAnimation,
-      builder: (context, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            // Animated Logo Row
-            Transform.rotate(
-              angle: _rotationAnimation.value,
-              child: Row(
-                children: [
-                  // Logo Circle with glow effect
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: toyBlue.withOpacity(0.3),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'TOY',
-                        style: TextStyle(
-                          color: toyBlue,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF2563EB), Color(0xFF10B981)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text(
+                  'TOY',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Vista',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(width: 8),
             const Text(
-              'Your one-stop shop for toys!',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
+              'Vista',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 28,
+              ),
             ),
           ],
-        );
-      },
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Your one-stop shop for toys! We provide the best selection of educational, fun, and trending toys for children of all ages.',
+          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.5),
+        ),
+      ],
     );
   }
 }

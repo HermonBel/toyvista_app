@@ -265,25 +265,29 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   Widget _buildResultsGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // Mobile: 2 columns, Tablet: 3 columns, Desktop: 4 columns
           int crossAxisCount = constraints.maxWidth > 1200
               ? 4
               : constraints.maxWidth > 900
                   ? 3
                   : constraints.maxWidth > 600
                       ? 2
-                      : 1;
+                      : 2; // Mobile gets 2 columns
+
+          // Adjust aspect ratio for mobile
+          double aspectRatio = constraints.maxWidth < 600 ? 0.8 : 0.75;
 
           return GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+              childAspectRatio: aspectRatio,
+              crossAxisSpacing: constraints.maxWidth < 600 ? 12 : 16,
+              mainAxisSpacing: constraints.maxWidth < 600 ? 12 : 16,
             ),
             itemCount: _searchResults.length,
             itemBuilder: (context, index) {

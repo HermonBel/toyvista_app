@@ -183,28 +183,7 @@ class _BlogsScreenState extends State<BlogsScreen> {
                   else if (_paginatedBlogs.isEmpty)
                     const Center(child: Text('No blogs found'))
                   else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount:
-                              MediaQuery.of(context).size.width > 1200
-                                  ? 3
-                                  : MediaQuery.of(context).size.width > 800
-                                      ? 2
-                                      : 1,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 24,
-                          mainAxisSpacing: 24,
-                        ),
-                        itemCount: _paginatedBlogs.length,
-                        itemBuilder: (context, index) {
-                          return BlogCard(blog: _paginatedBlogs[index]);
-                        },
-                      ),
-                    ),
+                    _buildBlogGrid(), // Call the new grid builder method
 
                   const SizedBox(height: 40),
 
@@ -224,6 +203,56 @@ class _BlogsScreenState extends State<BlogsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // New method for responsive blog grid
+  Widget _buildBlogGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Get screen width
+          double screenWidth = constraints.maxWidth;
+
+          // Determine number of columns based on screen size
+          int crossAxisCount;
+          double aspectRatio;
+          double spacing;
+
+          if (screenWidth > 1200) {
+            // Desktop: 3 columns
+            crossAxisCount = 3;
+            aspectRatio = 0.75;
+            spacing = 24;
+          } else if (screenWidth > 800) {
+            // Tablet: 2 columns
+            crossAxisCount = 2;
+            aspectRatio = 0.8;
+            spacing = 20;
+          } else {
+            // Mobile: 2 columns (changed from 1 to 2)
+            crossAxisCount = 2;
+            aspectRatio = 0.9; // Slightly taller for mobile to fit content
+            spacing = 12;
+          }
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: aspectRatio,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
+            ),
+            itemCount: _paginatedBlogs.length,
+            itemBuilder: (context, index) {
+              return BlogCard(blog: _paginatedBlogs[index]);
+            },
+          );
+        },
       ),
     );
   }

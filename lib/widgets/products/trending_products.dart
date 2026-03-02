@@ -159,22 +159,25 @@ class _TrendingProductsState extends State<TrendingProducts> {
           // Responsive grid
           LayoutBuilder(
             builder: (context, constraints) {
+              // Mobile: 2 columns, Tablet: 3 columns, Desktop: 4 columns
               int crossAxisCount = constraints.maxWidth > 1200
                   ? 4
                   : constraints.maxWidth > 900
                       ? 3
                       : constraints.maxWidth > 600
                           ? 2
-                          : 1;
+                          : 2; // Mobile gets 2 columns
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  childAspectRatio: constraints.maxWidth < 600
+                      ? 0.8
+                      : 0.75, // Slightly taller on mobile
+                  crossAxisSpacing: 12, // Slightly smaller spacing on mobile
+                  mainAxisSpacing: 12,
                 ),
                 itemCount: _trendingProducts.length,
                 itemBuilder: (context, index) {

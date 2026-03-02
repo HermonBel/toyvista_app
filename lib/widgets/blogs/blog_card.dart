@@ -1,19 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../models/blog_model.dart';
-import '../../utils/constants.dart';
-
 // lib/widgets/blogs/blog_card.dart
 import 'package:flutter/material.dart';
 import '../../models/blog_model.dart';
 import '../../utils/constants.dart';
+import '../../screens/blog_detail_screen.dart';
 
 class BlogCard extends StatefulWidget {
-  final Blog blog; // Make sure this matches
+  final Blog blog;
 
   const BlogCard({
     super.key,
-    required this.blog, // Parameter name must be 'blog'
+    required this.blog,
   });
 
   @override
@@ -22,263 +18,311 @@ class BlogCard extends StatefulWidget {
 
 class _BlogCardState extends State<BlogCard> {
   bool _isHovered = false;
-  bool _isButtonHovered = false;
 
   @override
   Widget build(BuildContext context) {
+    // Get screen width to determine layout
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
+    final isTablet = screenWidth > 600 && screenWidth <= 900;
+    final isMobile = screenWidth <= 600;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         transform: _isHovered
-            ? (Matrix4.identity()..translate(0, -8))
+            ? (Matrix4.identity()..translate(0, isDesktop ? -5 : -3))
             : Matrix4.identity(),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: _isHovered
-                    ? toyBlue.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.05),
-                blurRadius: _isHovered ? 20 : 10,
-                offset: Offset(0, _isHovered ? 8 : 2),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BlogDetailScreen(blog: widget.blog),
               ),
-            ],
-            border: Border.all(
-              color: _isHovered
-                  ? toyBlue.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.1),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(isDesktop ? 16 : 12),
+              boxShadow: [
+                BoxShadow(
+                  color: _isHovered
+                      ? toyBlue.withOpacity(isDesktop ? 0.15 : 0.1)
+                      : Colors.grey.withOpacity(0.05),
+                  blurRadius: _isHovered ? (isDesktop ? 15 : 8) : 8,
+                  offset: Offset(0, _isHovered ? (isDesktop ? 8 : 2) : 2),
+                ),
+              ],
+              border: Border.all(
+                color: _isHovered
+                    ? toyBlue.withOpacity(isDesktop ? 0.3 : 0.2)
+                    : Colors.grey.withOpacity(0.1),
+              ),
             ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image with category badge
-              Stack(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    height: 180,
-                    width: double.infinity,
-                    child: Image.network(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Image with responsive height
+                Stack(
+                  children: [
+                    Image.network(
                       widget.blog.imageUrl,
+                      height: isDesktop ? 180 : (isTablet ? 140 : 100),
+                      width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
+                          height: isDesktop ? 180 : (isTablet ? 140 : 100),
                           color: Colors.grey[200],
                           child: const Center(
-                            child: Icon(Icons.image_not_supported,
-                                color: Colors.grey),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                            ),
                           ),
                         );
                       },
                     ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0EA5E9), Color(0xFF10B981)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                    Positioned(
+                      top: isDesktop ? 12 : 6,
+                      left: isDesktop ? 12 : 6,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isDesktop ? 10 : 6,
+                            vertical: isDesktop ? 4 : 2),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0EA5E9), Color(0xFF10B981)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        widget.blog.category.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                          borderRadius:
+                              BorderRadius.circular(isDesktop ? 12 : 8),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Date and read time
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.calendar_today,
-                            size: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          widget.blog.formattedDate,
+                        child: Text(
+                          widget.blog.category,
                           style: TextStyle(
-                            color: _isHovered ? toyBlue : Colors.grey[600],
-                            fontSize: 12,
-                            fontWeight: _isHovered
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 4,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[400],
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.access_time,
-                          size: 12,
-                          color: _isHovered ? toyBlue : Colors.grey[400],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.blog.readTime,
-                          style: TextStyle(
-                            color: _isHovered ? toyBlue : Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Title
-                    Text(
-                      widget.blog.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: _isHovered ? toyBlue : Colors.grey[900],
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Excerpt
-                    Text(
-                      widget.blog.excerpt,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                        height: 1.5,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Read More button
-                    MouseRegion(
-                      onEnter: (_) => setState(() => _isButtonHovered = true),
-                      onExit: (_) => setState(() => _isButtonHovered = false),
-                      child: GestureDetector(
-                        onTap: () {
-                          // Navigate to blog detail
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: _isButtonHovered
-                                ? const LinearGradient(
-                                    colors: [
-                                      Color(0xFF0EA5E9),
-                                      Color(0xFF10B981)
-                                    ],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  )
-                                : null,
-                            color: _isButtonHovered ? null : Colors.transparent,
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: _isButtonHovered
-                                  ? Colors.transparent
-                                  : toyBlue,
-                            ),
-                            boxShadow: _isButtonHovered
-                                ? [
-                                    BoxShadow(
-                                      color: toyBlue.withOpacity(0.3),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    )
-                                  ]
-                                : null,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Read More',
-                                style: TextStyle(
-                                  color:
-                                      _isButtonHovered ? Colors.white : toyBlue,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                transform: _isButtonHovered
-                                    ? (Matrix4.identity()..translate(3.0))
-                                    : Matrix4.identity(),
-                                child: Icon(
-                                  Icons.arrow_forward,
-                                  size: 16,
-                                  color:
-                                      _isButtonHovered ? Colors.white : toyBlue,
-                                ),
-                              ),
-                            ],
+                            color: Colors.white,
+                            fontSize: isDesktop ? 11 : 8,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+
+                Padding(
+                  padding: EdgeInsets.all(isDesktop ? 16 : 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Date row - responsive
+                      isDesktop
+                          ? _buildDesktopDateRow()
+                          : _buildCompactDateRow(),
+
+                      SizedBox(height: isDesktop ? 12 : 6),
+
+                      // Title - responsive
+                      Text(
+                        widget.blog.title,
+                        style: TextStyle(
+                          fontSize: isDesktop ? 16 : (isTablet ? 14 : 12),
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                          height: 1.3,
+                        ),
+                        maxLines: isDesktop ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      SizedBox(height: isDesktop ? 8 : 4),
+
+                      // Excerpt - responsive (more lines on desktop)
+                      Text(
+                        widget.blog.excerpt,
+                        style: TextStyle(
+                          fontSize: isDesktop ? 14 : (isTablet ? 12 : 10),
+                          color: Colors.grey[600],
+                          height: 1.4,
+                        ),
+                        maxLines: isDesktop ? 3 : (isTablet ? 2 : 1),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      SizedBox(height: isDesktop ? 16 : 8),
+
+                      // Read More button - responsive
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isDesktop ? 16 : 8,
+                            vertical: isDesktop ? 8 : 4),
+                        decoration: BoxDecoration(
+                          color: _isHovered ? toyBlue : Colors.transparent,
+                          borderRadius:
+                              BorderRadius.circular(isDesktop ? 20 : 12),
+                          border: Border.all(
+                            color: _isHovered ? Colors.transparent : toyBlue,
+                            width: isDesktop ? 1 : 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isDesktop ? 'Read More' : 'Read',
+                              style: TextStyle(
+                                color: _isHovered ? Colors.white : toyBlue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: isDesktop ? 14 : 9,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward,
+                              size: isDesktop ? 16 : 8,
+                              color: _isHovered ? Colors.white : toyBlue,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  // Desktop date row (full format)
+  Widget _buildDesktopDateRow() {
+    return Row(
+      children: [
+        Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
+        const SizedBox(width: 6),
+        Text(
+          widget.blog.formattedDate,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          width: 4,
+          height: 4,
+          decoration: BoxDecoration(
+            color: Colors.grey[400],
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
+        const SizedBox(width: 6),
+        Text(
+          widget.blog.readTime,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Mobile/Compact date row (short format)
+  Widget _buildCompactDateRow() {
+    return Row(
+      children: [
+        Icon(Icons.calendar_today, size: 8, color: Colors.grey[500]),
+        const SizedBox(width: 2),
+        Expanded(
+          child: Text(
+            _getShortDate(),
+            style: TextStyle(
+              fontSize: 8,
+              color: Colors.grey[600],
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Container(
+          width: 2,
+          height: 2,
+          decoration: BoxDecoration(
+            color: Colors.grey[400],
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Icon(Icons.access_time, size: 8, color: Colors.grey[500]),
+        const SizedBox(width: 2),
+        Flexible(
+          child: Text(
+            _getShortReadTime(),
+            style: TextStyle(
+              fontSize: 8,
+              color: Colors.grey[600],
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getShortDate() {
+    try {
+      final parts = widget.blog.formattedDate.split(' ');
+      if (parts.length >= 3) {
+        final month = _getMonthNumber(parts[0]);
+        final day = parts[1].replaceAll(',', '');
+        return '$month/$day';
+      }
+    } catch (e) {
+      // Fallback
+    }
+    return widget.blog.formattedDate;
+  }
+
+  int _getMonthNumber(String month) {
+    const months = {
+      'Jan': 1,
+      'Feb': 2,
+      'Mar': 3,
+      'Apr': 4,
+      'May': 5,
+      'Jun': 6,
+      'Jul': 7,
+      'Aug': 8,
+      'Sep': 9,
+      'Oct': 10,
+      'Nov': 11,
+      'Dec': 12,
+    };
+    return months[month] ?? 1;
+  }
+
+  String _getShortReadTime() {
+    final parts = widget.blog.readTime.split(' ');
+    if (parts.isNotEmpty) {
+      return '${parts[0]}m';
+    }
+    return widget.blog.readTime;
   }
 }

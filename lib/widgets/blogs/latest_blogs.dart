@@ -105,26 +105,41 @@ class _LatestBlogsState extends State<LatestBlogs> {
           const SizedBox(height: 32),
           LayoutBuilder(
             builder: (context, constraints) {
-              int crossAxisCount = constraints.maxWidth > 1200
-                  ? 3
-                  : constraints.maxWidth > 900
-                      ? 2
-                      : 1;
-
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  childAspectRatio: 0.9,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: _latestBlogs.length,
-                itemBuilder: (context, index) {
-                  return BlogCard(blog: _latestBlogs[index]);
-                },
-              );
+              // MOBILE: Use GridView with 2 columns (no more cutting off)
+              if (constraints.maxWidth < 600) {
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 2 columns on mobile
+                    childAspectRatio: 0.9, // Adjusted for mobile
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: _latestBlogs.length,
+                  itemBuilder: (context, index) {
+                    return BlogCard(blog: _latestBlogs[index]);
+                  },
+                );
+              }
+              // TABLET/DESKTOP: Use GridView with more columns
+              else {
+                int crossAxisCount = constraints.maxWidth > 1200 ? 3 : 2;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 0.9,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _latestBlogs.length,
+                  itemBuilder: (context, index) {
+                    return BlogCard(blog: _latestBlogs[index]);
+                  },
+                );
+              }
             },
           ),
         ],
