@@ -1,11 +1,10 @@
-// lib/widgets/header/custom_header.dart
 import 'package:flutter/material.dart';
 import 'nav_link.dart';
 import '../../utils/constants.dart';
 import '../../screens/blogs_screen.dart';
 import '../../screens/why_toy_vista_screen.dart';
 import '../../screens/disclaimer_screen.dart';
-import '../../screens/search_results_screen.dart'; // Add this import
+import '../../screens/search_results_screen.dart';
 
 class CustomHeader extends StatefulWidget {
   final bool showSearchBar;
@@ -27,7 +26,6 @@ class _CustomHeaderState extends State<CustomHeader> {
   void _handleSearch(String query) {
     if (query.trim().isEmpty) return;
 
-    // Navigate to search results screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -35,7 +33,6 @@ class _CustomHeaderState extends State<CustomHeader> {
       ),
     );
 
-    // Clear search and close menu on mobile
     _searchController.clear();
     setState(() {
       _isMenuOpen = false;
@@ -49,7 +46,11 @@ class _CustomHeaderState extends State<CustomHeader> {
 
     return Container(
       decoration: const BoxDecoration(
-        gradient: headerGradient,
+        gradient: LinearGradient(
+          colors: [Color(0xFFBAE6FD), Color(0xFFBBF7D0)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
       ),
       child: Column(
         children: [
@@ -58,12 +59,12 @@ class _CustomHeaderState extends State<CustomHeader> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                // Logo
+                // Logo - Clickable to home
                 _buildLogo(context),
 
                 // Desktop Search Bar
                 if (!isMobile && widget.showSearchBar) ...[
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 40),
                   Expanded(
                     child: _buildDesktopSearchBar(),
                   ),
@@ -77,7 +78,7 @@ class _CustomHeaderState extends State<CustomHeader> {
                     IconButton(
                       icon: Icon(
                         _isSearchVisible ? Icons.close : Icons.search,
-                        color: toyDark,
+                        color: const Color(0xFF1E293B),
                         size: 28,
                       ),
                       onPressed: () {
@@ -89,7 +90,7 @@ class _CustomHeaderState extends State<CustomHeader> {
                   IconButton(
                     icon: Icon(
                       _isMenuOpen ? Icons.close : Icons.menu,
-                      color: toyDark,
+                      color: const Color(0xFF1E293B),
                       size: 28,
                     ),
                     onPressed: () {
@@ -170,7 +171,7 @@ class _CustomHeaderState extends State<CustomHeader> {
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.home, color: toyBlue),
+            leading: const Icon(Icons.home, color: Color(0xFF2563EB)),
             title: const Text('Home'),
             onTap: () {
               setState(() => _isMenuOpen = false);
@@ -178,7 +179,7 @@ class _CustomHeaderState extends State<CustomHeader> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.article, color: toyBlue),
+            leading: const Icon(Icons.article, color: Color(0xFF2563EB)),
             title: const Text('Blogs'),
             onTap: () {
               setState(() => _isMenuOpen = false);
@@ -189,7 +190,8 @@ class _CustomHeaderState extends State<CustomHeader> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.question_answer, color: toyBlue),
+            leading:
+                const Icon(Icons.question_answer, color: Color(0xFF2563EB)),
             title: const Text('Why Toy Vista?'),
             onTap: () {
               setState(() => _isMenuOpen = false);
@@ -201,7 +203,7 @@ class _CustomHeaderState extends State<CustomHeader> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.info, color: toyBlue),
+            leading: const Icon(Icons.info, color: Color(0xFF2563EB)),
             title: const Text('Disclaimer'),
             onTap: () {
               setState(() => _isMenuOpen = false);
@@ -222,71 +224,55 @@ class _CustomHeaderState extends State<CustomHeader> {
       onTap: () {
         Navigator.popUntil(context, (route) => route.isFirst);
       },
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: const Center(
-              child: Text(
-                'TOY',
-                style: TextStyle(
-                  color: toyBlue,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
-                ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // TOY text
+            const Text(
+              'TOY',
+              style: TextStyle(
+                color: Color(0xFF10B981), // Emerald green
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Vista',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: toyDark,
-                ),
+            const SizedBox(width: 2),
+            // Vista text
+            const Text(
+              'Vista',
+              style: TextStyle(
+                color: Color(0xFF2563EB), // Blue
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
               ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  Container(
-                    width: 16,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: toyBlue,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  Container(
-                    width: 8,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: toyYellow,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(width: 4),
+            // Small dot/circle
+            Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF59E0B), // Orange/amber
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -295,41 +281,71 @@ class _CustomHeaderState extends State<CustomHeader> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(40), // More curved
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: TextField(
-        controller: _searchController,
-        onSubmitted: _handleSearch,
-        decoration: InputDecoration(
-          hintText: 'Search for toys, games, and more...',
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
+      child: Row(
+        children: [
+          // Search icon on left
+          const Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Icon(
+              Icons.search,
+              color: Color(0xFF94A3B8),
+              size: 20,
+            ),
           ),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          suffixIcon: Container(
+
+          // Text field
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onSubmitted: _handleSearch,
+              decoration: const InputDecoration(
+                hintText: 'Search for toys, games, and more...',
+                hintStyle: TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                isDense: true,
+              ),
+            ),
+          ),
+
+          // Search button
+          Container(
             margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: toyYellow,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.search, color: Colors.white, size: 20),
+            child: ElevatedButton(
               onPressed: () => _handleSearch(_searchController.text),
-              padding: EdgeInsets.zero,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFBBF24), // Yellow
+                foregroundColor: const Color(0xFF1E293B),
+                minimumSize: const Size(80, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Search',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -339,40 +355,48 @@ class _CustomHeaderState extends State<CustomHeader> {
       height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: TextField(
-        controller: _searchController,
-        onSubmitted: _handleSearch,
-        decoration: InputDecoration(
-          hintText: 'Search for toys, games, and more...',
-          hintStyle: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Icon(
+              Icons.search,
+              color: Color(0xFF94A3B8),
+              size: 20,
+            ),
           ),
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          suffixIcon: Container(
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onSubmitted: _handleSearch,
+              decoration: const InputDecoration(
+                hintText: 'Search...',
+                hintStyle: TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ),
+          Container(
             margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: toyYellow,
-              borderRadius: BorderRadius.circular(30),
-            ),
             child: IconButton(
-              icon: const Icon(Icons.search, color: Colors.white, size: 20),
+              icon: const Icon(Icons.arrow_forward, color: Color(0xFF2563EB)),
               onPressed: () => _handleSearch(_searchController.text),
-              padding: EdgeInsets.zero,
             ),
           ),
-        ),
+        ],
       ),
     );
   }

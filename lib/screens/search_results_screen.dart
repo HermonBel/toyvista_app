@@ -1,4 +1,3 @@
-// lib/screens/search_results_screen.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -47,7 +46,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 150));
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = json.decode(response.body);
@@ -55,7 +54,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         final allProducts =
             productsJson.map((json) => Product.fromJson(json)).toList();
 
-        // Filter products by search query
         final results = allProducts.where((product) {
           final query = widget.query.toLowerCase();
           return product.name.toLowerCase().contains(query) ||
@@ -118,86 +116,30 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                             ],
                           ),
                         ),
-                        Text(
-                          '${_searchResults.length} products',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: toyBlue,
+                        if (!_isLoading && _error == null)
+                          Text(
+                            '${_searchResults.length} products',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: toyBlue,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 32),
 
-                  // Results grid
+                  // Results grid or error/loading state
                   if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
+                    _buildLoadingIndicator()
                   else if (_error != null)
-                    Center(
-                      child: Column(
-                        children: [
-                          Icon(Icons.error_outline,
-                              size: 48, color: Colors.red[300]),
-                          const SizedBox(height: 16),
-                          Text(_error!),
-                        ],
-                      ),
-                    )
+                    _buildErrorWidget()
                   else if (_searchResults.isEmpty)
-                    Center(
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'No products found matching "${widget.query}"',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
+                    _buildEmptyState()
                   else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          int crossAxisCount = constraints.maxWidth > 1200
-                              ? 4
-                              : constraints.maxWidth > 900
-                                  ? 3
-                                  : constraints.maxWidth > 600
-                                      ? 2
-                                      : 1;
-
-                          return GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossAxisCount,
-                              childAspectRatio: 0.75,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                            itemCount: _searchResults.length,
-                            itemBuilder: (context, index) {
-                              return ProductCard(
-                                  product: _searchResults[index]);
-                            },
-                          );
-                        },
-                      ),
-                    ),
+                    _buildResultsGrid(),
 
                   const SizedBox(height: 40),
                   const CustomFooter(),
@@ -206,6 +148,149 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Container(
+      height: 400,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(toyBlue),
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Searching for products...',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      height: 400,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: Colors.red,
+            size: 60,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _error!,
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+
+          // Retry button
+          ElevatedButton.icon(
+            onPressed: _performSearch,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: toyBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      height: 400,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'No products found matching "${widget.query}"',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.arrow_back),
+            label: const Text('Go Back'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: toyBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultsGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          int crossAxisCount = constraints.maxWidth > 1200
+              ? 4
+              : constraints.maxWidth > 900
+                  ? 3
+                  : constraints.maxWidth > 600
+                      ? 2
+                      : 1;
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: _searchResults.length,
+            itemBuilder: (context, index) {
+              return ProductCard(product: _searchResults[index]);
+            },
+          );
+        },
       ),
     );
   }

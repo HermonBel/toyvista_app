@@ -1,4 +1,3 @@
-// lib/widgets/products/trending_products.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,10 +18,31 @@ class _TrendingProductsState extends State<TrendingProducts> {
   bool _isLoading = true;
   String? _error;
 
+  // Static cache to persist across widget rebuilds
+  static List<Product>? _cachedProducts;
+  static DateTime? _lastFetchTime;
+  static const Duration _cacheDuration =
+      Duration(minutes: 5); // Cache for 5 minutes
+
   @override
   void initState() {
     super.initState();
-    _fetchTrendingProducts();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    // Check if cache is still valid
+    if (_cachedProducts != null &&
+        _lastFetchTime != null &&
+        DateTime.now().difference(_lastFetchTime!) < _cacheDuration) {
+      setState(() {
+        _trendingProducts = _cachedProducts!;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    await _fetchTrendingProducts();
   }
 
   Future<void> _fetchTrendingProducts() async {
@@ -54,8 +74,12 @@ class _TrendingProductsState extends State<TrendingProducts> {
         // If not enough trending products, take any products
         final displayProducts = trending.isNotEmpty ? trending : allProducts;
 
+        // Update cache
+        _cachedProducts = displayProducts.take(8).toList();
+        _lastFetchTime = DateTime.now();
+
         setState(() {
-          _trendingProducts = displayProducts.take(8).toList();
+          _trendingProducts = _cachedProducts!;
           _isLoading = false;
         });
       } else {
@@ -63,25 +87,31 @@ class _TrendingProductsState extends State<TrendingProducts> {
       }
     } catch (e) {
       print('Error fetching products: $e');
-      setState(() {
-        _error = 'Failed to load products';
-        _isLoading = false;
-      });
+
+      // If we have cached data, show it even if it's old
+      if (_cachedProducts != null) {
+        setState(() {
+          _trendingProducts = _cachedProducts!;
+          _isLoading = false;
+          _error = 'Using cached data. Please check connection.';
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load products';
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(32.0),
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return _buildLoadingSkeleton();
     }
 
-    if (_error != null || _trendingProducts.isEmpty) {
-      return const SizedBox
-          .shrink(); // Don't show section if error or no products
+    if (_error != null && _trendingProducts.isEmpty) {
+      return const SizedBox.shrink();
     }
 
     return Padding(
@@ -106,6 +136,25 @@ class _TrendingProductsState extends State<TrendingProducts> {
           const SizedBox(height: 8),
           Container(width: 80, height: 4, color: toyBlue),
           const SizedBox(height: 32),
+
+          // Show error message if using cached data with connection issue
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Colors.orange[800], fontSize: 12),
+                ),
+              ),
+            ),
 
           // Responsive grid
           LayoutBuilder(
@@ -133,6 +182,147 @@ class _TrendingProductsState extends State<TrendingProducts> {
                 },
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        children: [
+          // Title skeleton
+          Container(
+            height: 40,
+            width: 250,
+            color: Colors.grey[200],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 80,
+            height: 4,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 32),
+
+          // Grid skeleton
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = constraints.maxWidth > 1200
+                  ? 4
+                  : constraints.maxWidth > 900
+                      ? 3
+                      : constraints.maxWidth > 600
+                          ? 2
+                          : 1;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: crossAxisCount * 2, // Show 2 rows of skeletons
+                itemBuilder: (context, index) {
+                  return const ProductCardSkeleton();
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Skeleton loader for product cards
+class ProductCardSkeleton extends StatelessWidget {
+  const ProductCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image skeleton
+          Expanded(
+            flex: 3,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.image,
+                  color: Colors.grey,
+                  size: 40,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Title skeleton
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 100,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Price skeleton
+          Container(
+            width: 80,
+            height: 18,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Button skeleton
+          Container(
+            width: double.infinity,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ],
       ),
