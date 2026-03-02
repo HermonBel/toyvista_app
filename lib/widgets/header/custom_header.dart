@@ -5,6 +5,7 @@ import '../../utils/constants.dart';
 import '../../screens/blogs_screen.dart';
 import '../../screens/why_toy_vista_screen.dart';
 import '../../screens/disclaimer_screen.dart';
+import '../../screens/search_results_screen.dart'; // Add this import
 
 class CustomHeader extends StatefulWidget {
   final bool showSearchBar;
@@ -20,7 +21,27 @@ class CustomHeader extends StatefulWidget {
 
 class _CustomHeaderState extends State<CustomHeader> {
   bool _isMenuOpen = false;
+  bool _isSearchVisible = false;
   final TextEditingController _searchController = TextEditingController();
+
+  void _handleSearch(String query) {
+    if (query.trim().isEmpty) return;
+
+    // Navigate to search results screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultsScreen(query: query),
+      ),
+    );
+
+    // Clear search and close menu on mobile
+    _searchController.clear();
+    setState(() {
+      _isMenuOpen = false;
+      _isSearchVisible = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +53,15 @@ class _CustomHeaderState extends State<CustomHeader> {
       ),
       child: Column(
         children: [
-          // Header Bar (always visible)
+          // Header Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
               children: [
-                // Logo (left side)
+                // Logo
                 _buildLogo(context),
 
-                // Desktop Search Bar (in same row, only on desktop)
+                // Desktop Search Bar
                 if (!isMobile && widget.showSearchBar) ...[
                   const SizedBox(width: 24),
                   Expanded(
@@ -50,8 +71,21 @@ class _CustomHeaderState extends State<CustomHeader> {
 
                 const Spacer(),
 
-                // Mobile Menu Icon (only visible on mobile)
-                if (isMobile)
+                // Mobile Icons
+                if (isMobile) ...[
+                  if (widget.showSearchBar)
+                    IconButton(
+                      icon: Icon(
+                        _isSearchVisible ? Icons.close : Icons.search,
+                        color: toyDark,
+                        size: 28,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isSearchVisible = !_isSearchVisible;
+                        });
+                      },
+                    ),
                   IconButton(
                     icon: Icon(
                       _isMenuOpen ? Icons.close : Icons.menu,
@@ -64,8 +98,9 @@ class _CustomHeaderState extends State<CustomHeader> {
                       });
                     },
                   ),
+                ],
 
-                // Desktop Navigation (visible on desktop)
+                // Desktop Navigation
                 if (!isMobile)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -113,122 +148,71 @@ class _CustomHeaderState extends State<CustomHeader> {
             ),
           ),
 
-          // Mobile Dropdown Menu (appears from top)
-          if (isMobile && _isMenuOpen)
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              child: Column(
-                children: [
-                  // Search Bar inside dropdown
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.grey[300]!),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search...',
-                          hintStyle: TextStyle(color: Colors.grey[500]),
-                          border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 20),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.search, color: toyBlue),
-                            onPressed: () {
-                              // Handle search
-                              print('Searching for: ${_searchController.text}');
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Divider
-                  Divider(height: 1, color: Colors.grey[300]),
-
-                  // Menu Items
-                  _buildMenuItem(
-                    icon: Icons.home,
-                    title: 'Home',
-                    onTap: () {
-                      setState(() => _isMenuOpen = false);
-                      Navigator.popUntil(context, (route) => route.isFirst);
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.article,
-                    title: 'Blogs',
-                    onTap: () {
-                      setState(() => _isMenuOpen = false);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const BlogsScreen()),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.question_answer,
-                    title: 'Why Toy Vista?',
-                    onTap: () {
-                      setState(() => _isMenuOpen = false);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const WhyToyVistaScreen()),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.info,
-                    title: 'Disclaimer',
-                    onTap: () {
-                      setState(() => _isMenuOpen = false);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DisclaimerScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
+          // Mobile Search Bar
+          if (isMobile && _isSearchVisible) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+              child: _buildMobileSearchBar(),
             ),
+          ],
+
+          // Mobile Dropdown Menu
+          if (isMobile && _isMenuOpen) _buildMobileMenu(),
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          children: [
-            Icon(icon, color: toyBlue, size: 24),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: toyDark,
-              ),
-            ),
-          ],
-        ),
+  Widget _buildMobileMenu() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.home, color: toyBlue),
+            title: const Text('Home'),
+            onTap: () {
+              setState(() => _isMenuOpen = false);
+              Navigator.popUntil(context, (route) => route.isFirst);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.article, color: toyBlue),
+            title: const Text('Blogs'),
+            onTap: () {
+              setState(() => _isMenuOpen = false);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BlogsScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.question_answer, color: toyBlue),
+            title: const Text('Why Toy Vista?'),
+            onTap: () {
+              setState(() => _isMenuOpen = false);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const WhyToyVistaScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info, color: toyBlue),
+            title: const Text('Disclaimer'),
+            onTap: () {
+              setState(() => _isMenuOpen = false);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const DisclaimerScreen()),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -323,6 +307,7 @@ class _CustomHeaderState extends State<CustomHeader> {
       ),
       child: TextField(
         controller: _searchController,
+        onSubmitted: _handleSearch,
         decoration: InputDecoration(
           hintText: 'Search for toys, games, and more...',
           hintStyle: const TextStyle(
@@ -340,10 +325,50 @@ class _CustomHeaderState extends State<CustomHeader> {
             ),
             child: IconButton(
               icon: const Icon(Icons.search, color: Colors.white, size: 20),
-              onPressed: () {
-                // Handle search
-                print('Searching for: ${_searchController.text}');
-              },
+              onPressed: () => _handleSearch(_searchController.text),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileSearchBar() {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onSubmitted: _handleSearch,
+        decoration: InputDecoration(
+          hintText: 'Search for toys, games, and more...',
+          hintStyle: const TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          suffixIcon: Container(
+            margin: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: toyYellow,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.search, color: Colors.white, size: 20),
+              onPressed: () => _handleSearch(_searchController.text),
               padding: EdgeInsets.zero,
             ),
           ),

@@ -1,63 +1,89 @@
 // lib/widgets/products/trending_products.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'product_card.dart';
 import '../../utils/constants.dart';
+import '../../models/product_model.dart';
+import '../../utils/product_data.dart';
 
-class TrendingProducts extends StatelessWidget {
+class TrendingProducts extends StatefulWidget {
   const TrendingProducts({super.key});
 
-  // Expanded product list with 8 items
-  final List<Map<String, String>> products = const [
-    {
-      'title':
-          'STEM Robotics Science Kits for Kids Age 8-12 8-10, STEM Toys for Boys Girls 6-8',
-      'price': '\$20.99',
-      'image': 'https://picsum.photos/seed/robot1/400/400',
-    },
-    {
-      'title':
-          'Sillbird STEM 12-in-1 Education Solar Robot Toys for Boys Ages 8-13, DIY Building',
-      'price': '\$24.99',
-      'image': 'https://picsum.photos/seed/solar1/400/400',
-    },
-    {
-      'title':
-          'Teach Tech "Hydrobot Arm Kit", Hydraulic Robot Toys for Boys Ages 8-13',
-      'price': '\$55.99',
-      'image': 'https://picsum.photos/seed/arm1/400/400',
-    },
-    {
-      'title':
-          'STEM Kits for Kids Crafts 6-8 8-12, Boys Gifts Toys for 6-7 Year Old Boy',
-      'price': '\$21.99',
-      'image': 'https://picsum.photos/seed/craft1/400/400',
-    },
-    {
-      'title':
-          'LEGO Technic Bugatti Chiron 42083 Model Car Building Kit for Ages 16+',
-      'price': '\$349.99',
-      'image': 'https://picsum.photos/seed/lego1/400/400',
-    },
-    {
-      'title': 'Nerf N-Strike Elite Disruptor Blaster - 6-Dart Rotating Drum',
-      'price': '\$14.99',
-      'image': 'https://picsum.photos/seed/nerf1/400/400',
-    },
-    {
-      'title': 'Hot Wheels Track Builder Unlimited Loop Pack with 1 Toy Car',
-      'price': '\$24.99',
-      'image': 'https://picsum.photos/seed/hotwheels1/400/400',
-    },
-    {
-      'title':
-          'Barbie Dreamhouse Dollhouse with 70+ Pieces Including Furniture',
-      'price': '\$189.99',
-      'image': 'https://picsum.photos/seed/barbie1/400/400',
-    },
-  ];
+  @override
+  State<TrendingProducts> createState() => _TrendingProductsState();
+}
+
+class _TrendingProductsState extends State<TrendingProducts> {
+  List<Product> _trendingProducts = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTrendingProducts();
+  }
+
+  Future<void> _fetchTrendingProducts() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      print('Fetching products from: $productApiUrl');
+
+      final response = await http.get(
+        Uri.parse(productApiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> productsJson = json.decode(response.body);
+
+        final allProducts =
+            productsJson.map((json) => Product.fromJson(json)).toList();
+
+        // Filter trending products (is_trending == true) and take first 8
+        final trending = allProducts.where((p) => p.isTrending).toList();
+
+        // If not enough trending products, take any products
+        final displayProducts = trending.isNotEmpty ? trending : allProducts;
+
+        setState(() {
+          _trendingProducts = displayProducts.take(8).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+      setState(() {
+        _error = 'Failed to load products';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null || _trendingProducts.isEmpty) {
+      return const SizedBox
+          .shrink(); // Don't show section if error or no products
+    }
+
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -82,27 +108,29 @@ class TrendingProducts extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Responsive grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width > 1200
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = constraints.maxWidth > 1200
                   ? 4
-                  : MediaQuery.of(context).size.width > 900
+                  : constraints.maxWidth > 900
                       ? 3
-                      : MediaQuery.of(context).size.width > 600
+                      : constraints.maxWidth > 600
                           ? 2
-                          : 1,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              return ProductCard(
-                title: products[index]['title']!,
-                price: products[index]['price']!,
-                imageUrl: products[index]['image']!,
+                          : 1;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: _trendingProducts.length,
+                itemBuilder: (context, index) {
+                  return ProductCard(product: _trendingProducts[index]);
+                },
               );
             },
           ),

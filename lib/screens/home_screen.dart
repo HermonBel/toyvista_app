@@ -1,7 +1,7 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import '../widgets/header/custom_header.dart';
-import '../widgets/products/trending_products.dart';
+import '../widgets/products/trending_products.dart'; // This now fetches from API
 import '../widgets/categories/categories_section.dart';
 import '../widgets/blogs/latest_blogs.dart';
 import '../widgets/footer/custom_footer.dart';
@@ -15,10 +15,10 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            CustomHeader(showSearchBar: true), // Search bar visible
-            TrendingProducts(),
+            CustomHeader(showSearchBar: true),
+            TrendingProducts(), // Now fetches from API
             CategoriesSection(),
-            LatestBlogs(),
+            LatestBlogs(), // Already fetches from API
             CustomFooter(),
           ],
         ),

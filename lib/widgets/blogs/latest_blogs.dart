@@ -1,57 +1,83 @@
-// lib/widgets/blogs/latest_blogs.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'blog_card.dart';
 import '../../utils/constants.dart';
+import '../../models/blog_model.dart';
+import '../../utils/blog_data.dart';
 
-class LatestBlogs extends StatelessWidget {
+class LatestBlogs extends StatefulWidget {
   const LatestBlogs({super.key});
 
-  // Expanded blog list with 6 items
-  final List<Map<String, String>> blogs = const [
-    {
-      'title':
-          'Bloks - Which Building Toy Reigns Supreme? LEGO vs Mega Bloks vs K\'NEX',
-      'date': 'Apr 15, 2025',
-      'image': 'https://picsum.photos/seed/blog1/600/400',
-      'author': 'Sarah Johnson',
-    },
-    {
-      'title':
-          'Growing Minds: The Power of Educational Toys for Cognitive Development',
-      'date': 'Apr 14, 2025',
-      'image': 'https://picsum.photos/seed/blog2/600/400',
-      'author': 'Dr. Michael Chen',
-    },
-    {
-      'title':
-          'Child\'s Age: How to Pick the Perfect Toy for Every Developmental Stage',
-      'date': 'Apr 13, 2025',
-      'image': 'https://picsum.photos/seed/blog3/600/400',
-      'author': 'Emma Williams',
-    },
-    {
-      'title':
-          'STEM Toys vs Traditional Toys: What\'s Best for Your Child\'s Future?',
-      'date': 'Apr 12, 2025',
-      'image': 'https://picsum.photos/seed/blog4/600/400',
-      'author': 'Prof. Robert Taylor',
-    },
-    {
-      'title': 'The Ultimate Guide to Outdoor Toys for Active Kids This Summer',
-      'date': 'Apr 11, 2025',
-      'image': 'https://picsum.photos/seed/blog5/600/400',
-      'author': 'Jessica Martinez',
-    },
-    {
-      'title': 'Top 10 Board Games That Make Learning Math and Reading Fun',
-      'date': 'Apr 10, 2025',
-      'image': 'https://picsum.photos/seed/blog6/600/400',
-      'author': 'David Anderson',
-    },
-  ];
+  @override
+  State<LatestBlogs> createState() => _LatestBlogsState();
+}
+
+class _LatestBlogsState extends State<LatestBlogs> {
+  List<Blog> _latestBlogs = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLatestBlogs();
+  }
+
+  Future<void> _fetchLatestBlogs() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      print('Fetching latest blogs from: $blogApiUrl');
+
+      final response = await http.get(
+        Uri.parse(blogApiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> blogsJson = json.decode(response.body);
+
+        final allBlogs = blogsJson.map((json) => Blog.fromJson(json)).toList();
+
+        // Sort by date (newest first) and take latest 10
+        allBlogs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        setState(() {
+          _latestBlogs = allBlogs.take(10).toList();
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching latest blogs: $e');
+      setState(() {
+        _error = 'Failed to load blogs. Please try again later.';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null || _latestBlogs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -77,27 +103,27 @@ class LatestBlogs extends StatelessWidget {
             style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 32),
-
-          // Responsive grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width > 1200
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = constraints.maxWidth > 1200
                   ? 3
-                  : MediaQuery.of(context).size.width > 900
+                  : constraints.maxWidth > 900
                       ? 2
-                      : 1,
-              childAspectRatio: 0.9,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: blogs.length,
-            itemBuilder: (context, index) {
-              return BlogCard(
-                title: blogs[index]['title']!,
-                date: blogs[index]['date']!,
-                imageUrl: blogs[index]['image']!,
+                      : 1;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 0.9,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: _latestBlogs.length,
+                itemBuilder: (context, index) {
+                  return BlogCard(blog: _latestBlogs[index]);
+                },
               );
             },
           ),

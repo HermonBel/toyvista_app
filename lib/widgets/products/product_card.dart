@@ -1,17 +1,14 @@
 // lib/widgets/products/product_card.dart
 import 'package:flutter/material.dart';
+import '../../models/product_model.dart';
 import '../../utils/constants.dart';
 
 class ProductCard extends StatefulWidget {
-  final String title;
-  final String price;
-  final String imageUrl;
+  final Product product;
 
   const ProductCard({
     super.key,
-    required this.title,
-    required this.price,
-    required this.imageUrl,
+    required this.product,
   });
 
   @override
@@ -65,7 +62,7 @@ class _ProductCardState extends State<ProductCard> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Image.network(
-                  widget.imageUrl,
+                  widget.product.imageUrl,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const Center(
@@ -81,7 +78,7 @@ class _ProductCardState extends State<ProductCard> {
             Expanded(
               flex: 2,
               child: Text(
-                widget.title,
+                widget.product.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -95,7 +92,7 @@ class _ProductCardState extends State<ProductCard> {
 
             // Price
             Text(
-              widget.price,
+              widget.product.formattedPrice,
               style: TextStyle(
                 color: _isHovered ? toyBlue : toyBlue,
                 fontWeight: FontWeight.bold,
@@ -108,7 +105,11 @@ class _ProductCardState extends State<ProductCard> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Open tracking link
+                  // You can use url_launcher package to open the link
+                  print('Open: ${widget.product.trackingLink}');
+                },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _isHovered ? Colors.white : toyBlue,
                   backgroundColor: _isHovered ? toyBlue : Colors.transparent,
