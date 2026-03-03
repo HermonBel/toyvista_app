@@ -2,72 +2,98 @@
 import 'package:flutter/material.dart';
 
 class Responsive {
-  static double getAspectRatio(BuildContext context,
-      {required String cardType}) {
-    final Size screenSize = MediaQuery.of(context).size;
-    final double screenWidth = screenSize.width;
-    final double screenHeight = screenSize.height;
+  // Breakpoints
+  static const double mobile = 600;
+  static const double tablet = 900;
+  static const double desktop = 1200;
 
-    // Calculate based on screen proportions
-    // Formula: aspectRatio = (cardWidth / cardHeight)
-    // We want cards to be proportional to screen size
+  // Screen size checks
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < mobile;
 
-    if (cardType == 'product') {
-      // Products need more vertical space for images
-      if (screenWidth < 400) {
-        // Very small phones (iPhone SE)
-        return 0.75;
-      } else if (screenWidth < 600) {
-        // Regular phones
-        // Use screen ratio to determine card shape
-        return (screenWidth / screenHeight) * 2.2;
-      } else if (screenWidth < 900) {
-        // Tablets
-        return (screenWidth / screenHeight) * 1.8;
-      } else {
-        // Desktop
-        return 0.7;
-      }
-    } else if (cardType == 'blog') {
-      // Blogs need different proportions
-      if (screenWidth < 400) {
-        return 0.8;
-      } else if (screenWidth < 600) {
-        return (screenWidth / screenHeight) * 2.0;
-      } else if (screenWidth < 900) {
-        return (screenWidth / screenHeight) * 1.6;
-      } else {
-        return 0.75;
-      }
-    }
+  static bool isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= mobile &&
+      MediaQuery.of(context).size.width < tablet;
 
-    // Default fallback
-    return 0.8;
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= tablet;
+
+  // Grid configuration
+  static int getCrossAxisCount(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width > desktop) return 4;
+    if (width > tablet) return 3;
+    if (width > mobile) return 2;
+    return 2;
   }
 
   static double getCardSpacing(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-
-    if (screenWidth < 600) {
-      return 10; // Mobile
-    } else if (screenWidth < 900) {
-      return 16; // Tablet
-    } else {
-      return 20; // Desktop
-    }
+    final width = MediaQuery.of(context).size.width;
+    if (width < mobile) return 10;
+    if (width < tablet) return 12;
+    return 16;
   }
 
-  static int getCrossAxisCount(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
+  // DYNAMIC CARD HEIGHTS
+  static double getProductCardHeight(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    if (screenWidth > 1200) {
-      return 4; // Desktop - 4 columns
-    } else if (screenWidth > 900) {
-      return 3; // Small desktop/tablet - 3 columns
-    } else if (screenWidth > 600) {
-      return 2; // Tablet - 2 columns
-    } else {
-      return 2; // Mobile - 2 columns
-    }
+    if (screenWidth < mobile) return screenHeight * 0.4; // 40% of screen height
+    if (screenWidth < tablet)
+      return screenHeight * 0.38; // 38% of screen height
+    if (screenWidth < desktop)
+      return screenHeight * 0.35; // 35% of screen height
+    return screenHeight * 0.32; // 32% of screen height
+  }
+
+  static double getBlogCardHeight(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (screenWidth < mobile)
+      return screenHeight * 0.38; // 38% of screen height
+    if (screenWidth < tablet)
+      return screenHeight * 0.35; // 35% of screen height
+    if (screenWidth < desktop)
+      return screenHeight * 0.32; // 32% of screen height
+    return screenHeight * 0.3; // 30% of screen height
+  }
+
+  // DYNAMIC IMAGE HEIGHTS
+  static double getProductImageHeight(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < mobile) return screenWidth * 0.35; // 35% of width
+    if (screenWidth < tablet) return screenWidth * 0.3; // 30% of width
+    return screenWidth * 0.25; // 25% of width
+  }
+
+  static double getBlogImageHeight(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < mobile) return screenWidth * 0.3; // 30% of width
+    if (screenWidth < tablet) return screenWidth * 0.25; // 25% of width
+    return screenWidth * 0.2; // 20% of width
+  }
+
+  // DYNAMIC FONT SIZES
+  static double getTitleFontSize(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < mobile) return screenWidth * 0.035; // 3.5% of width
+    if (screenWidth < tablet) return screenWidth * 0.03; // 3% of width
+    return screenWidth * 0.025; // 2.5% of width
+  }
+
+  static double getBodyFontSize(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < mobile) return screenWidth * 0.03; // 3% of width
+    if (screenWidth < tablet) return screenWidth * 0.025; // 2.5% of width
+    return screenWidth * 0.02; // 2% of width
+  }
+
+  static double getSmallFontSize(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < mobile) return screenWidth * 0.025; // 2.5% of width
+    if (screenWidth < tablet) return screenWidth * 0.02; // 2% of width
+    return screenWidth * 0.015; // 1.5% of width
   }
 }

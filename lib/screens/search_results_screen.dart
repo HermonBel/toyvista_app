@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 import '../widgets/header/custom_header.dart';
 import '../widgets/footer/custom_footer.dart';
 import '../widgets/products/product_card.dart';
@@ -47,7 +48,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-      ).timeout(const Duration(seconds: 150));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final List<dynamic> productsJson = json.decode(response.body);
@@ -134,7 +135,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
                   // Results grid or error/loading state
                   if (_isLoading)
-                    _buildLoadingIndicator()
+                    _buildLoadingSkeleton()
                   else if (_error != null)
                     _buildErrorWidget()
                   else if (_searchResults.isEmpty)
@@ -153,27 +154,57 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return Container(
-      height: 400,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(toyBlue),
-            strokeWidth: 3,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Searching for products...',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+  Widget _buildResultsGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          int crossAxisCount = Responsive.getCrossAxisCount(context);
+          double spacing = Responsive.getCardSpacing(context);
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio:
+                  1, // Let ProductCard's fixed height control size
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
             ),
-          ),
-        ],
+            itemCount: _searchResults.length,
+            itemBuilder: (context, index) {
+              return ProductCard(product: _searchResults[index]);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          int crossAxisCount = Responsive.getCrossAxisCount(context);
+          double spacing = Responsive.getCardSpacing(context);
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 1,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
+            ),
+            itemCount: 8, // Show 8 skeletons
+            itemBuilder: (context, index) {
+              return const ProductCardSkeleton();
+            },
+          );
+        },
       ),
     );
   }
@@ -201,8 +232,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-
-          // Retry button
           ElevatedButton.icon(
             onPressed: _performSearch,
             icon: const Icon(Icons.refresh),
@@ -263,32 +292,87 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildResultsGrid() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          int crossAxisCount = Responsive.getCrossAxisCount(context);
-          double aspectRatio =
-              Responsive.getAspectRatio(context, cardType: 'product');
-          double spacing = Responsive.getCardSpacing(context);
+// ProductCardSkeleton class
+class ProductCardSkeleton extends StatelessWidget {
+  const ProductCardSkeleton({super.key});
 
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: aspectRatio,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: spacing,
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      height: isMobile ? 360 : 400,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          // Image skeleton
+          Expanded(
+            flex: 4,
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.image,
+                  color: Colors.grey,
+                  size: 40,
+                ),
+              ),
             ),
-            itemCount: _searchResults.length,
-            itemBuilder: (context, index) {
-              return ProductCard(product: _searchResults[index]);
-            },
-          );
-        },
+          ),
+
+          // Content skeleton
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title lines
+                  Container(
+                    width: double.infinity,
+                    height: 12,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 150,
+                    height: 12,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 100,
+                    height: 12,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Button skeleton
+                  Container(
+                    height: 32,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

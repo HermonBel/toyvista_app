@@ -169,7 +169,7 @@ class _BlogsScreenState extends State<BlogsScreen> {
 
                   // Content
                   if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
+                    _buildLoadingSkeleton()
                   else if (_error != null)
                     Center(
                       child: Column(
@@ -184,7 +184,7 @@ class _BlogsScreenState extends State<BlogsScreen> {
                   else if (_paginatedBlogs.isEmpty)
                     const Center(child: Text('No blogs found'))
                   else
-                    _buildBlogGrid(), // Call the new grid builder method
+                    _buildBlogGrid(),
 
                   const SizedBox(height: 40),
 
@@ -214,8 +214,6 @@ class _BlogsScreenState extends State<BlogsScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           int crossAxisCount = Responsive.getCrossAxisCount(context);
-          double aspectRatio =
-              Responsive.getAspectRatio(context, cardType: 'blog');
           double spacing = Responsive.getCardSpacing(context);
 
           return GridView.builder(
@@ -223,7 +221,7 @@ class _BlogsScreenState extends State<BlogsScreen> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              childAspectRatio: aspectRatio,
+              childAspectRatio: 1, // Let BlogCard's fixed height control size
               crossAxisSpacing: spacing,
               mainAxisSpacing: spacing,
             ),
@@ -233,6 +231,130 @@ class _BlogsScreenState extends State<BlogsScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          int crossAxisCount = Responsive.getCrossAxisCount(context);
+          double spacing = Responsive.getCardSpacing(context);
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 1,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
+            ),
+            itemCount: 6, // Show 6 skeletons
+            itemBuilder: (context, index) {
+              return const BlogCardSkeleton();
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// BlogCardSkeleton class
+class BlogCardSkeleton extends StatelessWidget {
+  const BlogCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      height: isMobile ? 340 : 380,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          // Image skeleton
+          Container(
+            height: isMobile ? 130 : 160,
+            width: double.infinity,
+            color: Colors.grey[200],
+            child: const Center(
+              child: Icon(
+                Icons.image,
+                color: Colors.grey,
+                size: 40,
+              ),
+            ),
+          ),
+
+          // Content skeleton
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Date row skeleton
+                  Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 10,
+                        color: Colors.grey[200],
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 40,
+                        height: 10,
+                        color: Colors.grey[200],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Title lines
+                  Container(
+                    width: double.infinity,
+                    height: 12,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 150,
+                    height: 12,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Excerpt line
+                  Container(
+                    width: double.infinity,
+                    height: 10,
+                    color: Colors.grey[200],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Button skeleton
+                  Container(
+                    height: 32,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
