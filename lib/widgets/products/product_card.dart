@@ -25,10 +25,9 @@ class _ProductCardState extends State<ProductCard> {
       if (await canLaunchUrl(url)) {
         await launchUrl(
           url,
-          mode: LaunchMode.externalApplication, // Opens in external browser
+          mode: LaunchMode.externalApplication,
         );
       } else {
-        // Show error if link can't be opened
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
@@ -50,6 +49,9 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -78,76 +80,94 @@ class _ProductCardState extends State<ProductCard> {
                 : Colors.grey.withOpacity(0.1),
           ),
         ),
-        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
+            // Image - MUCH BIGGER on mobile
             Expanded(
-              flex: 3,
+              flex: isMobile ? 5 : 4, // More space for image on mobile
               child: Container(
                 width: double.infinity,
+                margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: toyBackground,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Image.network(
-                  widget.product.imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(Icons.toys, color: toyBlue, size: 40),
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Title
-            Expanded(
-              flex: 2,
-              child: Text(
-                widget.product.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                  color: _isHovered ? toyBlue : Colors.black87,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Price
-            Text(
-              widget.product.formattedPrice,
-              style: TextStyle(
-                color: _isHovered ? toyBlue : toyBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // View Details Button - Now opens link
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _openProductLink,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: _isHovered ? Colors.white : toyBlue,
-                  backgroundColor: _isHovered ? toyBlue : Colors.transparent,
-                  side: BorderSide(
-                    color: _isHovered ? toyBlue : toyBlue,
-                  ),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.product.imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Icon(Icons.toys,
+                            color: toyBlue, size: isMobile ? 60 : 40),
+                      );
+                    },
                   ),
                 ),
-                child: const Text('View Details'),
+              ),
+            ),
+
+            // Product details
+            Padding(
+              padding: EdgeInsets.all(isMobile ? 12 : 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title - more lines on mobile
+                  Text(
+                    widget.product.name,
+                    maxLines: isMobile ? 3 : 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: isMobile ? 14 : 13,
+                      color: _isHovered ? toyBlue : Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: isMobile ? 8 : 4),
+
+                  // Price
+                  Text(
+                    widget.product.formattedPrice,
+                    style: TextStyle(
+                      color: _isHovered ? toyBlue : toyBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: isMobile ? 20 : 18,
+                    ),
+                  ),
+                  SizedBox(height: isMobile ? 12 : 8),
+
+                  // Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _openProductLink,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: _isHovered ? Colors.white : toyBlue,
+                        backgroundColor:
+                            _isHovered ? toyBlue : Colors.transparent,
+                        side: BorderSide(
+                          color: _isHovered ? toyBlue : toyBlue,
+                        ),
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(
+                          vertical: isMobile ? 14 : 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'View Details',
+                        style: TextStyle(
+                          fontSize: isMobile ? 15 : 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

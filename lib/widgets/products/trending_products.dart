@@ -5,6 +5,7 @@ import 'product_card.dart';
 import '../../utils/constants.dart';
 import '../../models/product_model.dart';
 import '../../utils/product_data.dart';
+import '../../utils/responsive.dart';
 
 class TrendingProducts extends StatefulWidget {
   const TrendingProducts({super.key});
@@ -159,25 +160,42 @@ class _TrendingProductsState extends State<TrendingProducts> {
           // Responsive grid
           LayoutBuilder(
             builder: (context, constraints) {
-              // Mobile: 2 columns, Tablet: 3 columns, Desktop: 4 columns
-              int crossAxisCount = constraints.maxWidth > 1200
-                  ? 4
-                  : constraints.maxWidth > 900
-                      ? 3
-                      : constraints.maxWidth > 600
-                          ? 2
-                          : 2; // Mobile gets 2 columns
+              double screenWidth = constraints.maxWidth;
+
+              int crossAxisCount;
+              double aspectRatio;
+              double spacing;
+
+              if (screenWidth > 1200) {
+                // Desktop: 4 columns
+                crossAxisCount = 4;
+                aspectRatio = 0.7; // Taller
+                spacing = 16;
+              } else if (screenWidth > 900) {
+                // Small desktop/tablet: 3 columns
+                crossAxisCount = 3;
+                aspectRatio = 0.75; // Taller
+                spacing = 16;
+              } else if (screenWidth > 600) {
+                // Tablet: 2 columns
+                crossAxisCount = 2;
+                aspectRatio = 0.8; // Taller
+                spacing = 16;
+              } else {
+                // Mobile: 2 columns - MUCH TALLER cards
+                crossAxisCount = 2;
+                aspectRatio = 0.9; // Changed from 0.95 to 0.9 (even taller)
+                spacing = 12;
+              }
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  childAspectRatio: constraints.maxWidth < 600
-                      ? 0.8
-                      : 0.75, // Slightly taller on mobile
-                  crossAxisSpacing: 12, // Slightly smaller spacing on mobile
-                  mainAxisSpacing: 12,
+                  childAspectRatio: aspectRatio,
+                  crossAxisSpacing: spacing,
+                  mainAxisSpacing: spacing,
                 ),
                 itemCount: _trendingProducts.length,
                 itemBuilder: (context, index) {
@@ -213,35 +231,11 @@ class _TrendingProductsState extends State<TrendingProducts> {
           // Grid skeleton
           LayoutBuilder(
             builder: (context, constraints) {
-              // Get screen width
-              double screenWidth = constraints.maxWidth;
-
-              // Determine number of columns based on screen size
-              int crossAxisCount;
-              double aspectRatio;
-              double spacing;
-
-              if (screenWidth > 1200) {
-                // Desktop: 4 columns
-                crossAxisCount = 4;
-                aspectRatio = 0.75;
-                spacing = 16;
-              } else if (screenWidth > 900) {
-                // Small desktop/tablet: 3 columns
-                crossAxisCount = 3;
-                aspectRatio = 0.8;
-                spacing = 16;
-              } else if (screenWidth > 600) {
-                // Tablet: 2 columns
-                crossAxisCount = 2;
-                aspectRatio = 0.9;
-                spacing = 16;
-              } else {
-                // Mobile: 2 columns - make cards TALLER
-                crossAxisCount = 2;
-                aspectRatio = 0.95; // Increased from 0.8 to 0.95 (taller)
-                spacing = 12;
-              }
+              // Use dynamic values from Responsive class
+              int crossAxisCount = Responsive.getCrossAxisCount(context);
+              double aspectRatio =
+                  Responsive.getAspectRatio(context, cardType: 'product');
+              double spacing = Responsive.getCardSpacing(context);
 
               return GridView.builder(
                 shrinkWrap: true,

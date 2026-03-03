@@ -5,6 +5,7 @@ import 'blog_card.dart';
 import '../../utils/constants.dart';
 import '../../models/blog_model.dart';
 import '../../utils/blog_data.dart';
+import '../../utils/responsive.dart';
 
 class LatestBlogs extends StatefulWidget {
   const LatestBlogs({super.key});
@@ -105,60 +106,25 @@ class _LatestBlogsState extends State<LatestBlogs> {
           const SizedBox(height: 32),
           LayoutBuilder(
             builder: (context, constraints) {
-              double screenWidth = constraints.maxWidth;
+              int crossAxisCount = Responsive.getCrossAxisCount(context);
+              double aspectRatio =
+                  Responsive.getAspectRatio(context, cardType: 'blog');
+              double spacing = Responsive.getCardSpacing(context);
 
-              // MOBILE: Use GridView with taller cards
-              if (screenWidth < 600) {
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio:
-                        0.85, // Increased from 0.9 to 0.85 (taller)
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: _latestBlogs.length,
-                  itemBuilder: (context, index) {
-                    return BlogCard(blog: _latestBlogs[index]);
-                  },
-                );
-              }
-              // TABLET
-              else if (screenWidth < 900) {
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.9,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: _latestBlogs.length,
-                  itemBuilder: (context, index) {
-                    return BlogCard(blog: _latestBlogs[index]);
-                  },
-                );
-              }
-              // DESKTOP
-              else {
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.9,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: _latestBlogs.length,
-                  itemBuilder: (context, index) {
-                    return BlogCard(blog: _latestBlogs[index]);
-                  },
-                );
-              }
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: aspectRatio,
+                  crossAxisSpacing: spacing,
+                  mainAxisSpacing: spacing,
+                ),
+                itemCount: _latestBlogs.length,
+                itemBuilder: (context, index) {
+                  return BlogCard(blog: _latestBlogs[index]);
+                },
+              );
             },
           ),
         ],

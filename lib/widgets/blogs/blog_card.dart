@@ -21,7 +21,6 @@ class _BlogCardState extends State<BlogCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width to determine layout
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 900;
     final isTablet = screenWidth > 600 && screenWidth <= 900;
@@ -69,34 +68,39 @@ class _BlogCardState extends State<BlogCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Image with responsive height
+                // Image - MUCH BIGGER on mobile
                 Stack(
                   children: [
                     Image.network(
                       widget.blog.imageUrl,
-                      height: isDesktop ? 180 : (isTablet ? 140 : 100),
+                      height: isDesktop
+                          ? 200
+                          : (isTablet
+                              ? 180
+                              : 150), // Increased mobile from 100 to 150
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          height: isDesktop ? 180 : (isTablet ? 140 : 100),
+                          height: isDesktop ? 200 : (isTablet ? 180 : 150),
                           color: Colors.grey[200],
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.image_not_supported,
                               color: Colors.grey,
+                              size: isMobile ? 40 : 30,
                             ),
                           ),
                         );
                       },
                     ),
                     Positioned(
-                      top: isDesktop ? 12 : 6,
-                      left: isDesktop ? 12 : 6,
+                      top: isDesktop ? 12 : 8,
+                      left: isDesktop ? 12 : 8,
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: isDesktop ? 10 : 6,
-                            vertical: isDesktop ? 4 : 2),
+                            horizontal: isDesktop ? 10 : 8,
+                            vertical: isDesktop ? 4 : 3),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF0EA5E9), Color(0xFF10B981)],
@@ -110,7 +114,7 @@ class _BlogCardState extends State<BlogCard> {
                           widget.blog.category,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: isDesktop ? 11 : 8,
+                            fontSize: isDesktop ? 11 : (isMobile ? 10 : 9),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -120,23 +124,23 @@ class _BlogCardState extends State<BlogCard> {
                 ),
 
                 Padding(
-                  padding: EdgeInsets.all(isDesktop ? 16 : 8),
+                  padding: EdgeInsets.all(isDesktop ? 16 : 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Date row - responsive
-                      isDesktop
-                          ? _buildDesktopDateRow()
-                          : _buildCompactDateRow(),
+                      // Date row
+                      _buildDateRow(context),
 
-                      SizedBox(height: isDesktop ? 12 : 6),
+                      SizedBox(height: isDesktop ? 12 : 8),
 
-                      // Title - responsive
+                      // Title - BIGGER on mobile
                       Text(
                         widget.blog.title,
                         style: TextStyle(
-                          fontSize: isDesktop ? 16 : (isTablet ? 14 : 12),
+                          fontSize: isDesktop
+                              ? 16
+                              : (isMobile ? 15 : 14), // Increased mobile
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1E293B),
                           height: 1.3,
@@ -145,51 +149,57 @@ class _BlogCardState extends State<BlogCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                      SizedBox(height: isDesktop ? 8 : 4),
+                      SizedBox(height: isDesktop ? 8 : 6),
 
-                      // Excerpt - responsive (more lines on desktop)
+                      // Excerpt - BIGGER on mobile
                       Text(
                         widget.blog.excerpt,
                         style: TextStyle(
-                          fontSize: isDesktop ? 14 : (isTablet ? 12 : 10),
+                          fontSize: isDesktop
+                              ? 14
+                              : (isMobile ? 13 : 12), // Increased mobile
                           color: Colors.grey[600],
                           height: 1.4,
                         ),
-                        maxLines: isDesktop ? 3 : (isTablet ? 2 : 1),
+                        maxLines: isDesktop ? 3 : (isTablet ? 2 : 2),
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                      SizedBox(height: isDesktop ? 16 : 8),
+                      SizedBox(height: isDesktop ? 16 : 12),
 
-                      // Read More button - responsive
+                      // Read More button - BIGGER on mobile
                       Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: isDesktop ? 16 : 8,
-                            vertical: isDesktop ? 8 : 4),
+                            horizontal: isDesktop ? 16 : (isMobile ? 14 : 12),
+                            vertical: isDesktop ? 8 : (isMobile ? 8 : 6)),
                         decoration: BoxDecoration(
                           color: _isHovered ? toyBlue : Colors.transparent,
                           borderRadius:
-                              BorderRadius.circular(isDesktop ? 20 : 12),
+                              BorderRadius.circular(isDesktop ? 20 : 16),
                           border: Border.all(
                             color: _isHovered ? Colors.transparent : toyBlue,
-                            width: isDesktop ? 1 : 0.5,
+                            width: isDesktop ? 1 : 1,
                           ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              isDesktop ? 'Read More' : 'Read',
+                              isDesktop ? 'Read More' : 'Read More',
                               style: TextStyle(
                                 color: _isHovered ? Colors.white : toyBlue,
                                 fontWeight: FontWeight.w600,
-                                fontSize: isDesktop ? 14 : 9,
+                                fontSize: isDesktop
+                                    ? 14
+                                    : (isMobile ? 14 : 12), // Increased mobile
                               ),
                             ),
                             const SizedBox(width: 4),
                             Icon(
                               Icons.arrow_forward,
-                              size: isDesktop ? 16 : 8,
+                              size: isDesktop
+                                  ? 16
+                                  : (isMobile ? 16 : 12), // Increased mobile
                               color: _isHovered ? Colors.white : toyBlue,
                             ),
                           ],
@@ -206,20 +216,23 @@ class _BlogCardState extends State<BlogCard> {
     );
   }
 
-  // Desktop date row (full format)
-  Widget _buildDesktopDateRow() {
+  Widget _buildDateRow(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Row(
       children: [
-        Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
-        const SizedBox(width: 6),
+        Icon(Icons.calendar_today,
+            size: isMobile ? 12 : 10, color: Colors.grey[500]),
+        const SizedBox(width: 4),
         Text(
           widget.blog.formattedDate,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: isMobile ? 12 : 10,
             color: Colors.grey[600],
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Container(
           width: 4,
           height: 4,
@@ -228,101 +241,18 @@ class _BlogCardState extends State<BlogCard> {
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 12),
-        Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
+        Icon(Icons.access_time,
+            size: isMobile ? 12 : 10, color: Colors.grey[500]),
+        const SizedBox(width: 4),
         Text(
           widget.blog.readTime,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: isMobile ? 12 : 10,
             color: Colors.grey[600],
           ),
         ),
       ],
     );
-  }
-
-  // Mobile/Compact date row (short format)
-  Widget _buildCompactDateRow() {
-    return Row(
-      children: [
-        Icon(Icons.calendar_today, size: 8, color: Colors.grey[500]),
-        const SizedBox(width: 2),
-        Expanded(
-          child: Text(
-            _getShortDate(),
-            style: TextStyle(
-              fontSize: 8,
-              color: Colors.grey[600],
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Container(
-          width: 2,
-          height: 2,
-          decoration: BoxDecoration(
-            color: Colors.grey[400],
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Icon(Icons.access_time, size: 8, color: Colors.grey[500]),
-        const SizedBox(width: 2),
-        Flexible(
-          child: Text(
-            _getShortReadTime(),
-            style: TextStyle(
-              fontSize: 8,
-              color: Colors.grey[600],
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _getShortDate() {
-    try {
-      final parts = widget.blog.formattedDate.split(' ');
-      if (parts.length >= 3) {
-        final month = _getMonthNumber(parts[0]);
-        final day = parts[1].replaceAll(',', '');
-        return '$month/$day';
-      }
-    } catch (e) {
-      // Fallback
-    }
-    return widget.blog.formattedDate;
-  }
-
-  int _getMonthNumber(String month) {
-    const months = {
-      'Jan': 1,
-      'Feb': 2,
-      'Mar': 3,
-      'Apr': 4,
-      'May': 5,
-      'Jun': 6,
-      'Jul': 7,
-      'Aug': 8,
-      'Sep': 9,
-      'Oct': 10,
-      'Nov': 11,
-      'Dec': 12,
-    };
-    return months[month] ?? 1;
-  }
-
-  String _getShortReadTime() {
-    final parts = widget.blog.readTime.split(' ');
-    if (parts.isNotEmpty) {
-      return '${parts[0]}m';
-    }
-    return widget.blog.readTime;
   }
 }

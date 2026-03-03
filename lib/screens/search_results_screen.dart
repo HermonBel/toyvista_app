@@ -7,6 +7,7 @@ import '../widgets/products/product_card.dart';
 import '../models/product_model.dart';
 import '../utils/product_data.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String query;
@@ -268,30 +269,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          double screenWidth = constraints.maxWidth;
-
-          int crossAxisCount;
-          double aspectRatio;
-          double spacing;
-
-          if (screenWidth > 1200) {
-            crossAxisCount = 4;
-            aspectRatio = 0.75;
-            spacing = 16;
-          } else if (screenWidth > 900) {
-            crossAxisCount = 3;
-            aspectRatio = 0.8;
-            spacing = 16;
-          } else if (screenWidth > 600) {
-            crossAxisCount = 2;
-            aspectRatio = 0.9;
-            spacing = 16;
-          } else {
-            // Mobile: 2 columns - TALLER cards
-            crossAxisCount = 2;
-            aspectRatio = 0.95; // Increased from 0.8 to 0.95
-            spacing = 12;
-          }
+          int crossAxisCount = Responsive.getCrossAxisCount(context);
+          double aspectRatio =
+              Responsive.getAspectRatio(context, cardType: 'product');
+          double spacing = Responsive.getCardSpacing(context);
 
           return GridView.builder(
             shrinkWrap: true,

@@ -9,6 +9,7 @@ import '../widgets/blogs/blog_pagination.dart';
 import '../models/blog_model.dart';
 import '../utils/blog_data.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 
 class BlogsScreen extends StatefulWidget {
   const BlogsScreen({super.key});
@@ -207,34 +208,15 @@ class _BlogsScreenState extends State<BlogsScreen> {
     );
   }
 
-  // New method for responsive blog grid
   Widget _buildBlogGrid() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          double screenWidth = constraints.maxWidth;
-
-          int crossAxisCount;
-          double aspectRatio;
-          double spacing;
-
-          if (screenWidth > 1200) {
-            // Desktop: 3 columns
-            crossAxisCount = 3;
-            aspectRatio = 0.75;
-            spacing = 24;
-          } else if (screenWidth > 800) {
-            // Tablet: 2 columns
-            crossAxisCount = 2;
-            aspectRatio = 0.85;
-            spacing = 20;
-          } else {
-            // Mobile: 2 columns - TALLER cards
-            crossAxisCount = 2;
-            aspectRatio = 0.9; // Increased from 0.85 to 0.9
-            spacing = 12;
-          }
+          int crossAxisCount = Responsive.getCrossAxisCount(context);
+          double aspectRatio =
+              Responsive.getAspectRatio(context, cardType: 'blog');
+          double spacing = Responsive.getCardSpacing(context);
 
           return GridView.builder(
             shrinkWrap: true,
